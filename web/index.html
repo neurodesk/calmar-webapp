@@ -612,7 +612,7 @@
         <li>Downloaded result files are created locally from browser memory.</li>
       </ul>
       <h4>Third-party services</h4>
-      <p>Static app files and public atlas assets may be served from external hosting, but patient-derived files are not sent to those services by the analysis code.</p>
+      <p>Static app files and public atlas assets may be served from external hosting, but patient-derived files are not sent to those services by the analysis code. Cloudflare Web Analytics collects aggregate page usage and performance metrics without patient images, masks, voxel values, screenshots, generated outputs, filenames, or analysis results.</p>
     </div>
   </div>
 </div>
@@ -710,6 +710,7 @@
 
 <script src="coi-serviceworker.js"></script>
 <script src="js/lnm-app.js" type="module"></script>
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4312648587884e6b984b7bc189db840e"}'></script><!-- End Cloudflare Web Analytics -->
 
 </body>
 </html>

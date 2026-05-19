@@ -315,6 +315,12 @@ assert.doesNotMatch(html, /spinalcordtoolbox-app\.js/,
   'old spinalcordtoolbox-app.js script tag must be gone');
 assert.match(html, /<script\s[^>]*src=["']coi-serviceworker\.js["']/,
   'COI service worker script must remain loaded for same-origin mask downloads');
+assert.match(html, /Cloudflare Web Analytics/,
+  'index.html must disclose Cloudflare Web Analytics in comments/privacy copy');
+assert.match(html, /<script\s[^>]*defer[^>]*src=["']https:\/\/static\.cloudflareinsights\.com\/beacon\.min\.js["'][^>]*data-cf-beacon=['"][^>]*4312648587884e6b984b7bc189db840e[^>]*><\/script>/,
+  'Cloudflare Web Analytics beacon must remain wired with the configured site token');
+assert.match(html, /aggregate page usage and performance metrics without patient images, masks, voxel values, screenshots, generated outputs, filenames, or analysis results/,
+  'privacy copy must constrain analytics to aggregate page/performance metrics without patient-derived data');
 assert.match(serviceWorker, /__lnm_downloads/,
   'service worker must serve staged mask downloads from the same-origin route');
 assert.match(serviceWorker, /lnm-mask-downloads-v1/,
