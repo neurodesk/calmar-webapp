@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const html = fs.readFileSync(path.join(ROOT, 'web/index.html'), 'utf8');
+const css = fs.readFileSync(path.join(ROOT, 'web/css/styles.css'), 'utf8');
 const serviceWorker = fs.readFileSync(path.join(ROOT, 'web/coi-serviceworker.js'), 'utf8');
 const runScript = fs.readFileSync(path.join(ROOT, 'web/run.sh'), 'utf8');
 
@@ -149,6 +150,25 @@ assert.match(html, /Atlas and model assets may be downloaded when a workflow nee
   'start page privacy copy must distinguish public assets from patient-derived files');
 assert.match(html, /Background execution is possible if this site is added under "Always keep these sites active" in your browser settings\./,
   'start page must explain how to allow background execution');
+assert.match(css, /\.start-page\s*\{[^}]*height:\s*100vh;[^}]*overflow:\s*hidden;/,
+  'start page overlay must be a one-screen layout without internal scrolling');
+assert.match(css, /\.start-main\s*\{[^}]*grid-template-rows:\s*minmax\(0,\s*1fr\)\s+auto;/,
+  'start page content must allocate the hero and How It Works sections within one viewport');
+assert.match(css, /\.start-step\s*\{[^}]*grid-template-columns:\s*40px\s+1fr;[^}]*text-align:\s*left;/,
+  'desktop start-page steps must use compact horizontal rows instead of tall cards');
+assert.match(css, /\.start-step h4,\s*\.start-step p\s*\{[^}]*grid-column:\s*2;/,
+  'start-page step text must stay in the text column instead of wrapping under the icon');
+assert.match(css, /@media\s*\(max-width:\s*540px\)[\s\S]*\.start-links\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/,
+  'mobile start-page header links must use a compact two-column grid');
+const moreAppsLinks = [
+  ...html.matchAll(/<a\b(?=[^>]*href=["']https:\/\/neurodesk\.org\/getting-started\/hosted\/webapps\/["'])(?=[^>]*target=["']_blank["'])(?=[^>]*rel=["']noopener noreferrer["'])(?=[^>]*class=["'][^"']*\bheader-link\b[^"']*["'])(?=[^>]*title=["']More Neurodesk web apps["'])[^>]*>[\s\S]*?<span>More Apps<\/span>[\s\S]*?<\/a>/g)
+];
+assert.equal(moreAppsLinks.length, 2,
+  'start page and workspace headers must expose the Neurodesk More Apps link');
+for (const link of moreAppsLinks) {
+  assert.match(link[0], /<rect x=["']3["'] y=["']3["'] width=["']7["'] height=["']7["']\/>/,
+    'More Apps link must use the shared 2x2 grid icon pattern');
+}
 
 const prealignButton = html.match(/<button\b[^>]*id=["']prealignToMniButton["'][^>]*>([\s\S]*?)<\/button>/i);
 assert.ok(prealignButton, '#prealignToMniButton must be a button element');
