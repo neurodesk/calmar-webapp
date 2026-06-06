@@ -562,6 +562,8 @@ async function waitForMicrotaskCondition(predicate, message, attempts = 20) {
       patchSize: [128, 128, 128],
       probabilityThreshold: 0.4,
       minComponentSize: 30,
+      overlap: 0.25,
+      testTimeAugmentation: true,
       preprocessing: {}
     }]
   };
@@ -588,9 +590,10 @@ async function waitForMicrotaskCondition(predicate, message, attempts = 20) {
     app.viewerBaseFile = file;
     app._lastBaseOptions = options;
   };
+  let inferenceSettings = null;
   app.executor = {
     loadVolume: async () => { calls.push('load'); },
-    runInference: async () => { calls.push('run-inference'); }
+    runInference: async (settings) => { calls.push('run-inference'); inferenceSettings = settings; }
   };
 
   let settled = false;
@@ -624,6 +627,13 @@ async function waitForMicrotaskCondition(predicate, message, attempts = 20) {
   assert.ok(app.autoLesionSeedFile, 'autoLesionSeedFile must be populated before the stage resolves');
   assert.equal(app.lesionMaskFile, null,
     'automatic segmentation is only a seed; confirmed manual review populates lesionMaskFile');
+  // Test-time augmentation must be enabled so reflection-unstable false
+  // positives (notably in-brain cerebellum/posterior-fossa clusters) are
+  // averaged out; overlap stays at the manifest-configured 0.25.
+  assert.equal(inferenceSettings.testTimeAugmentation, true,
+    'lesion segmentation must dispatch with test-time augmentation enabled to suppress cerebellum false positives');
+  assert.equal(inferenceSettings.overlap, 0.25,
+    'lesion segmentation sliding-window overlap must follow the manifest (0.25)');
 }
 
 // ---- Test 10b: auto structural pipeline pauses at manual mask review ----

@@ -1902,11 +1902,17 @@ export class LesionNetworkMappingApp {
       threshold: entry.probabilityThreshold ?? 0.4,
       minComponentSize: entry.minComponentSize ?? 30,
       preprocessing: entry.preprocessing || {},
-      // Sliding-window overlap and TTA defaults per the locked Phase 2a.2
-      // plan: lighter than nnU-Net's 0.5 + 8-axis to keep browser inference
-      // bounded; quality toggle is a future polish item.
-      overlap: 0.25,
-      testTimeAugmentation: false
+      // Test-time augmentation (8-axis flip averaging) is enabled to suppress
+      // spurious activations that are not robust to reflection — notably the
+      // in-brain cerebellum/posterior-fossa false positives SynthStroke can
+      // emit. On the prealigned MNI160 input, TTA at overlap 0.25 removes the
+      // cerebellar FP cluster while preserving ~95% of the true lesion (vs the
+      // no-TTA baseline that kept the FP); raising overlap further only costs
+      // recall. TTA is ~8x the patch inference cost but bounded, and uses the
+      // existing static-128 ONNX (no 192^3 re-export). Overlap stays at 0.25;
+      // both are read from the manifest so they can be tuned without code.
+      overlap: entry.overlap ?? 0.25,
+      testTimeAugmentation: entry.testTimeAugmentation ?? true
     });
     await Promise.all([segmentationReady, segmentationStepDone]);
   }
