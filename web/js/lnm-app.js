@@ -227,7 +227,11 @@ export function formatVersionLabel(version, buildInfo = null) {
   const bits = [];
   const sha = buildInfo?.sha || '';
   if (sha && !versionText.includes(sha)) bits.push(sha);
-  if (buildInfo?.branch && buildInfo.branch !== 'main') bits.push(buildInfo.branch);
+  // Production deploys set `branch` to the release tag (e.g. `v0.17.13`),
+  // which duplicates the version. Only surface a branch that adds information.
+  const branch = buildInfo?.branch || '';
+  const isVersionTag = branch === label || branch === versionText || branch === `v${versionText}`;
+  if (branch && branch !== 'main' && branch !== 'detached' && !isVersionTag) bits.push(branch);
   if (buildInfo?.dirty) bits.push('dirty');
   if (bits.length) label += ` (${bits.join(', ')})`;
   return label;
